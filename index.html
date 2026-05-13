@@ -34,7 +34,7 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 8px;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.2rem;
             padding: 12px;
             background: #f8f8fa;
             border-radius: 20px;
@@ -44,30 +44,28 @@
         }
         .admin-btns {
             grid-column: span 2;
-            display: flex; gap: 8px; margin-top: 8px;
+            display: flex; gap: 6px; margin-top: 8px;
         }
         .small-btn {
             flex: 1; padding: 10px; border: none; border-radius: 10px; 
-            font-size: 0.85rem; font-weight: 600; cursor: pointer;
+            font-size: 0.8rem; font-weight: 600; cursor: pointer;
         }
         .save-btn { background-color: #34c759; color: white; }
-        .load-btn { background-color: #007aff; color: white; }
+        .list-btn { background-color: #007aff; color: white; }
 
-        h1 { font-size: 1.4rem; font-weight: 700; text-align: center; margin-bottom: 1.5rem; margin-top: 0; }
+        h1 { font-size: 1.3rem; font-weight: 700; text-align: center; margin: 0.5rem 0 1.2rem; }
         label { display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.4rem; color: var(--text-color); }
 
         textarea {
             width: 100%; padding: 14px; border: 1px solid #e5e5ea; border-radius: 16px;
             background-color: #ffffff; font-family: var(--font-family); font-size: 0.95rem;
-            line-height: 1.5; box-sizing: border-box; resize: none; transition: all 0.2s; margin-bottom: 1rem;
+            line-height: 1.5; box-sizing: border-box; resize: none; transition: all 0.2s; margin-bottom: 0.8rem;
         }
-        textarea:focus { outline: none; border-color: var(--primary-color); }
 
         .audio-control {
             position: absolute; top: 15px; right: 15px; width: 34px; height: 34px;
             border-radius: 50%; background: #f2f2f7; display: none; 
             justify-content: center; align-items: center; cursor: pointer; border: none; color: var(--primary-color);
-            z-index: 10;
         }
 
         .content-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
@@ -76,12 +74,38 @@
             border: none; border-radius: 18px; font-size: 1.05rem; font-weight: 600; cursor: pointer; margin-top: auto;
         }
 
+        /* 모달 스타일 */
+        .modal {
+            display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 1000; border-radius: 40px;
+            justify-content: center; align-items: flex-end;
+        }
+        .modal-content {
+            background: white; width: 100%; max-height: 70%; border-radius: 30px 30px 40px 40px;
+            padding: 20px; box-sizing: border-box; display: flex; flex-direction: column;
+            animation: slideUp 0.3s ease-out;
+        }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .modal-header h3 { margin: 0; font-size: 1.1rem; }
+        .close-modal { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--secondary-text); }
+
+        .record-list { flex: 1; overflow-y: auto; list-style: none; padding: 0; margin: 0; }
+        .record-item {
+            padding: 15px; border-bottom: 1px solid #f2f2f7; display: flex; justify-content: space-between; align-items: center;
+        }
+        .record-info { flex: 1; cursor: pointer; }
+        .record-info .title { font-weight: 600; font-size: 0.95rem; display: block; }
+        .record-info .meta { font-size: 0.75rem; color: var(--secondary-text); }
+        .del-btn { color: #ff3b30; border: none; background: none; padding: 10px; font-size: 0.8rem; }
+
+        /* 명상 모드 */
+        .meditation-mode { display: none; flex-direction: column; height: 100%; }
+        .current-step-text { font-size: 1rem; line-height: 1.7; margin: 1.5rem 0; text-align: center; flex: 1; display: flex; align-items: center; justify-content: center; white-space: pre-line; }
         .button-group { display: flex; gap: 10px; margin-top: auto; padding-bottom: 5px; }
         .nav-button { flex: 1; padding: 16px 5px; background-color: #f2f2f7; color: var(--text-color); font-size: 0.95rem; font-weight: 600; border-radius: 14px; border: none; }
         .nav-button.primary { background-color: var(--primary-color); color: white; }
-
-        .meditation-mode { display: none; flex-direction: column; height: 100%; }
-        .current-step-text { font-size: 1rem; line-height: 1.7; margin: 1.5rem 0; text-align: center; flex: 1; display: flex; align-items: center; justify-content: center; white-space: pre-line; }
     </style>
 </head>
 <body>
@@ -95,8 +119,8 @@
             <input type="text" id="user-name" placeholder="사용자 이름">
             <input type="text" id="event-title" placeholder="사건명">
             <div class="admin-btns">
-                <button class="small-btn save-btn" onclick="saveToCloud()">내용 저장하기</button>
-                <button class="small-btn load-btn" onclick="loadFromCloud()">불러오기</button>
+                <button class="small-btn save-btn" onclick="saveToCloud()">내용 저장</button>
+                <button class="small-btn list-btn" onclick="openModal()">저장 목록 보기</button>
             </div>
         </div>
 
@@ -110,7 +134,7 @@
         </div>
 
         <div id="meditation-section" class="meditation-mode">
-            <h2 id="step-title" style="font-size: 0.8rem; color: var(--secondary-text); text-align:center; text-transform: uppercase; letter-spacing: 1px;">단계</h2>
+            <h2 id="step-title" style="font-size: 0.8rem; color: var(--secondary-text); text-align:center;">단계</h2>
             <div id="meditation-content" class="current-step-text"></div>
             <div>
                 <label>지금 이 순간의 통찰</label>
@@ -122,6 +146,19 @@
                 <button id="next-btn" class="nav-button primary" onclick="goToNextStep()">다음</button>
             </div>
             <button id="reset-btn" class="main-btn" style="display:none;" onclick="resetAll()">새로운 정화 시작</button>
+        </div>
+
+        <!-- 저장 목록 모달 -->
+        <div id="list-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>저장된 정화 기록</h3>
+                    <button class="close-modal" onclick="closeModal()">&times;</button>
+                </div>
+                <ul class="record-list" id="record-list">
+                    <!-- 리스트가 자바스크립트로 생성됨 -->
+                </ul>
+            </div>
         </div>
     </div>
 
@@ -138,48 +175,79 @@
         const audioToggleBtn = document.getElementById('audio-toggle');
         const audioIcon = document.getElementById('audio-icon');
 
-        // 저장 기능: 사용자명+사건명을 키로 사용하여 객체 저장
+        // 저장 기능
         function saveToCloud() {
             const user = document.getElementById('user-name').value.trim();
             const title = document.getElementById('event-title').value.trim();
-            
-            if(!user || !title) return alert("사용자 이름과 사건명을 입력해야 저장할 수 있습니다.");
+            if(!user || !title) return alert("사용자 이름과 사건명을 입력해주세요.");
 
             const data = {
+                user: user,
+                title: title,
                 event: document.getElementById('event').value,
                 judgment: document.getElementById('judgment').value,
                 insight: document.getElementById('insight').value,
-                timestamp: new Date().toLocaleString()
+                date: new Date().toLocaleString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
             };
 
-            const key = `ACIM_${user}_${title}`;
+            const key = `ACIM_REC_${Date.now()}`; // 고유 키 생성
             localStorage.setItem(key, JSON.stringify(data));
-            alert(`[${title}] 저장되었습니다.`);
+            alert("기록이 저장되었습니다.");
         }
 
-        // 불러오기 기능
-        function loadFromCloud() {
-            const user = document.getElementById('user-name').value.trim();
-            const title = document.getElementById('event-title').value.trim();
-            
-            if(!user || !title) return alert("불러올 사용자 이름과 사건명을 입력하세요.");
+        // 모달 제어 및 리스트 출력
+        function openModal() {
+            const listEl = document.getElementById('record-list');
+            listEl.innerHTML = '';
+            let hasData = false;
 
-            const key = `ACIM_${user}_${title}`;
-            const savedData = localStorage.getItem(key);
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('ACIM_REC_')) {
+                    hasData = true;
+                    const data = JSON.parse(localStorage.getItem(key));
+                    const li = document.createElement('li');
+                    li.className = 'record-item';
+                    li.innerHTML = `
+                        <div class="record-info" onclick="loadRecord('${key}')">
+                            <span class="title">${data.user} - ${data.title}</span>
+                            <span class="meta">${data.date}</span>
+                        </div>
+                        <button class="del-btn" onclick="deleteRecord('${key}')">삭제</button>
+                    `;
+                    listEl.appendChild(li);
+                }
+            }
 
-            if(savedData) {
-                const data = JSON.parse(savedData);
-                document.getElementById('event').value = data.event || "";
-                document.getElementById('judgment').value = data.judgment || "";
-                document.getElementById('insight').value = data.insight || "";
-                alert("성공적으로 불러왔습니다.");
-            } else {
-                alert("해당 정보로 저장된 데이터가 없습니다.");
+            if(!hasData) listEl.innerHTML = '<li style="text-align:center; padding:20px; color:#8e8e93;">저장된 기록이 없습니다.</li>';
+            document.getElementById('list-modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('list-modal').style.display = 'none';
+        }
+
+        function loadRecord(key) {
+            const data = JSON.parse(localStorage.getItem(key));
+            document.getElementById('user-name').value = data.user;
+            document.getElementById('event-title').value = data.title;
+            document.getElementById('event').value = data.event;
+            document.getElementById('judgment').value = data.judgment;
+            document.getElementById('insight').value = data.insight || "";
+            closeModal();
+            alert(`[${data.title}] 기록을 불러왔습니다.`);
+        }
+
+        function deleteRecord(key) {
+            if(confirm("이 기록을 삭제하시겠습니까?")) {
+                localStorage.removeItem(key);
+                openModal(); // 리스트 갱신
             }
         }
 
+        // 명상 로직
         function startMeditation() {
-            if (!document.getElementById('event').value) return alert("정화할 내용을 입력해주세요.");
+            if (!document.getElementById('event').value) return alert("내용을 입력해주세요.");
             document.getElementById('input-section').style.display = 'none';
             document.getElementById('meditation-section').style.display = 'flex';
             audioToggleBtn.style.display = 'flex'; 
@@ -195,38 +263,24 @@
         }
 
         function goToNextStep() {
-            if (currentStepIndex < scripts.length - 1) { 
-                currentStepIndex++; 
-                updateUI(); 
-            } else { 
-                finishMeditation(); 
-            }
+            if (currentStepIndex < scripts.length - 1) { currentStepIndex++; updateUI(); }
+            else { finishMeditation(); }
         }
 
         function goToPrevStep() {
-            if (currentStepIndex > 0) { 
-                currentStepIndex--; 
-                updateUI(); 
-            }
+            if (currentStepIndex > 0) { currentStepIndex--; updateUI(); }
         }
 
         function finishMeditation() {
             audioPlayer.pause();
             document.getElementById('step-title').innerText = "평온";
-            document.getElementById('meditation-content').innerText = "정화가 완료되었습니다.\n하나님의 평화가 함께합니다.";
+            document.getElementById('meditation-content').innerText = "정화가 완료되었습니다.";
             document.getElementById('nav-group').style.display = 'none';
             document.getElementById('reset-btn').style.display = 'block';
         }
 
-        function goHome() {
-            if(confirm("입력 중인 내용이 사라질 수 있습니다. 처음으로 돌아갈까요?")) {
-                location.reload();
-            }
-        }
-
-        function resetAll() {
-            location.reload();
-        }
+        function goHome() { location.reload(); }
+        function resetAll() { location.reload(); }
 
         function playStepAudio(src) {
             audioPlayer.src = src;
@@ -240,6 +294,12 @@
 
         audioPlayer.onplay = () => { audioIcon.innerText = "⏸"; };
         audioPlayer.onpause = () => { audioIcon.innerText = "▶"; };
+
+        // 배경 클릭 시 모달 닫기
+        window.onclick = function(event) {
+            const modal = document.getElementById('list-modal');
+            if (event.target == modal) closeModal();
+        }
     </script>
 </body>
 </html>
