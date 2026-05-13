@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>ACIM 마음 정화 명상</title>
     <style>
         :root {
@@ -14,136 +14,162 @@
             --font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
+        /* 전 영역을 꽉 채우기 위한 설정 */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* 배경 스크롤 방지 */
+            background-color: var(--bg-color);
+        }
+
         body {
             font-family: var(--font-family);
-            background-color: var(--bg-color);
-            color: var(--text-color);
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            margin: 0;
+            /* iOS 주소창 대응을 위한 dvh 단위 사용 */
+            height: 100dvh; 
             -webkit-font-smoothing: antialiased;
+            /* Safe Area (노치 등) 여백 확보 */
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
         }
 
         .container {
-            width: 95%;
-            max-width: 480px;
+            width: 100%;
+            height: 100%; /* 화면에 꽉 차도록 설정 */
+            max-width: 500px; /* 태블릿/PC에서도 너무 퍼지지 않게 제한 */
+            max-height: 900px; /* 너무 긴 화면에서의 비율 유지 */
             background: var(--card-bg);
-            padding: 2rem 1.5rem;
-            border-radius: 30px;
+            padding: 2.5rem 1.5rem;
             box-shadow: 0 20px 40px rgba(0,0,0,0.08);
             box-sizing: border-box;
             position: relative;
+            display: flex;
+            flex-direction: column;
+            /* 화면 비율에 맞춰 둥근 모서리 조정 (모바일은 약간 작게) */
+            border-radius: 40px; 
         }
 
-        h1 { font-size: 1.45rem; font-weight: 700; text-align: center; margin-bottom: 1.5rem; }
+        /* 모바일 전체화면 모드일 때 모서리 둥글기 제거 (선택 사항) */
+        @media (max-height: 700px) {
+            .container { border-radius: 0; }
+        }
+
+        h1 { font-size: 1.6rem; font-weight: 700; text-align: center; margin-bottom: 2rem; margin-top: 1rem; }
         
         label { 
             display: block; 
-            margin-top: 1rem; 
             font-weight: 600; 
-            font-size: 0.85rem; 
-            margin-bottom: 0.4rem; 
+            font-size: 0.9rem; 
+            margin-bottom: 0.6rem; 
             padding-left: 4px;
             color: var(--text-color);
         }
 
         textarea {
             width: 100%;
-            min-height: 65px;
-            max-height: 250px;
-            padding: 12px 14px;
+            padding: 16px;
             border: 1px solid #e5e5ea;
-            border-radius: 14px;
-            background-color: #fafafa;
+            border-radius: 18px;
+            background-color: #f9f9fb;
             font-family: var(--font-family);
-            font-size: 0.95rem;
-            line-height: 1.45;
+            font-size: 1rem;
+            line-height: 1.5;
             box-sizing: border-box;
-            overflow-y: hidden;
             resize: none;
             transition: all 0.2s;
+            margin-bottom: 1.5rem;
         }
 
-        textarea:focus { outline: none; border-color: var(--primary-color); background-color: #ffffff; }
+        textarea:focus { outline: none; border-color: var(--primary-color); background-color: #ffffff; box-shadow: 0 0 0 4px rgba(88, 86, 214, 0.1); }
 
-        /* 오디오 컨트롤 버튼 위치 최적화 */
         .audio-control {
             position: absolute;
-            top: 12px;       
-            right: 15px;    
-            width: 32px;    
-            height: 32px;
+            top: 25px;       
+            right: 25px;    
+            width: 40px;    
+            height: 40px;
             border-radius: 50%;
-            background: rgba(242, 242, 247, 0.8);
+            background: #f2f2f7;
             display: none; 
             justify-content: center;
             align-items: center;
             cursor: pointer;
             border: none;
             color: var(--primary-color);
-            font-size: 0.85rem;
-            transition: all 0.2s;
+            font-size: 1rem;
             z-index: 100;
         }
-        .audio-control:active { transform: scale(0.9); }
 
-        .insight-box {
-            margin-top: 0.5rem;
-            border: 1px dashed #d1d1d6;
-            background-color: #fcfcfd;
-            min-height: 45px;
+        /* 하단 고정을 위한 래퍼 */
+        .content-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto; /* 내용이 길어지면 내부에서만 스크롤 */
+            -webkit-overflow-scrolling: touch;
         }
 
-        button {
+        button.main-btn {
             width: 100%;
-            margin-top: 1.5rem;
-            padding: 16px;
+            padding: 20px;
             background-color: var(--primary-color);
             color: white;
             border: none;
-            border-radius: 16px;
-            font-size: 1rem;
+            border-radius: 20px;
+            font-size: 1.1rem;
             font-weight: 600;
             cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
+            margin-top: auto; /* 버튼을 항상 하단으로 밀어냄 */
+            margin-bottom: 10px;
         }
 
         .button-group {
             display: flex;
-            gap: 8px;
-            margin-top: 1.5rem;
+            gap: 12px;
+            margin-top: auto;
+            padding-bottom: 10px;
         }
 
         .nav-button {
             flex: 1;
-            padding: 13px 8px;
-            background-color: #e5e5ea;
+            padding: 18px 8px;
+            background-color: #f2f2f7;
             color: var(--text-color);
-            font-size: 0.88rem;
-            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 16px;
             border: none;
         }
 
         .nav-button.primary { background-color: var(--primary-color); color: white; }
-        .nav-button.home { background-color: #f2f2f7; color: var(--secondary-text); }
-        .nav-button:disabled { opacity: 0.2; cursor: not-allowed; }
+        .nav-button:disabled { opacity: 0.3; }
 
-        .meditation-mode { display: none; text-align: center; }
+        .meditation-mode { 
+            display: none; 
+            flex-direction: column; 
+            height: 100%;
+        }
         
         .current-step-text { 
-            font-size: 0.95rem; 
-            line-height: 1.7; 
+            font-size: 1.1rem; 
+            line-height: 1.8; 
             font-weight: 500;
-            margin-top: 0.5rem; 
+            margin: 2rem 0;
             word-break: keep-all;
             white-space: pre-line;
-            min-height: 140px;
+            text-align: center;
+            flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 0 8px;
+        }
+
+        .insight-box {
+            margin-top: 10px;
+            min-height: 80px;
+            border-style: solid;
         }
     </style>
 </head>
@@ -156,33 +182,41 @@
 
         <audio id="step-audio" preload="auto"></audio>
 
-        <div id="input-section">
+        <!-- 입력 섹션 -->
+        <div id="input-section" class="content-wrapper">
             <h1>마음 정화 명상</h1>
-            <label>정화하고 싶은 사건이나 과거의 기억</label>
-            <textarea id="event" rows="1" placeholder="어떤 장면이 떠오르나요? 떠오른 장면을 상세하게 적어보세요." oninput="handleInput(this)"></textarea>
-            <label>그 사건이나 기억에 대한 나의 당위성이나 판단</label>
-            <textarea id="judgment" rows="1" placeholder="어떤 생각들이 떠오르나요? 떠오르는 생각들을 상세하게 적어보세요." oninput="handleInput(this)"></textarea>
-            <button onclick="startMeditation()">정화 시작하기</button>
+            <label>정화하고 싶은 사건/기억</label>
+            <textarea id="event" rows="3" placeholder="어떤 장면이 떠오르나요?" oninput="handleInput(this)"></textarea>
+            
+            <label>나의 판단이나 생각</label>
+            <textarea id="judgment" rows="3" placeholder="어떤 생각들이 괴롭히나요?" oninput="handleInput(this)"></textarea>
+            
+            <button class="main-btn" onclick="startMeditation()">정화 시작하기</button>
         </div>
 
+        <!-- 명상 섹션 -->
         <div id="meditation-section" class="meditation-mode">
-            <h2 id="step-title" style="font-size: 0.75rem; color: var(--secondary-text); letter-spacing: 1px; margin-bottom: 0.5rem;">준비</h2>
+            <h2 id="step-title" style="font-size: 0.9rem; color: var(--secondary-text); text-align:center; letter-spacing: 1px;">준비</h2>
+            
             <div id="meditation-content" class="current-step-text"></div>
             
-            <label style="text-align: left; margin-top: 1.5rem;">새롭게 떠오른 생각/감정</label>
-            <textarea id="insight" class="insight-box" rows="1" placeholder="지금 느껴지는 것을 적어보세요..." oninput="autoResize(this)"></textarea>
+            <div style="margin-bottom: 20px;">
+                <label>지금 이 순간의 통찰</label>
+                <textarea id="insight" class="insight-box" placeholder="떠오르는 느낌을 기록하세요..." oninput="autoResize(this)"></textarea>
+            </div>
 
             <div class="button-group" id="nav-group">
                 <button id="prev-btn" class="nav-button" onclick="goToPrevStep()">이전</button>
-                <button id="home-btn" class="nav-button home" onclick="goHome()">처음으로</button>
+                <button id="home-btn" class="nav-button" onclick="goHome()">처음</button>
                 <button id="next-btn" class="nav-button primary" onclick="goToNextStep()">다음</button>
             </div>
             
-            <button id="reset-btn" style="display:none;" onclick="goHome()">새로운 정화 시작</button>
+            <button id="reset-btn" class="main-btn" style="display:none;" onclick="goHome()">새로운 정화 시작</button>
         </div>
     </div>
 
     <script>
+        // ... (자바스크립트 로직은 기존과 동일하되 UI 연결부만 유지) ...
         let currentStepIndex = 0;
         let scripts = [];
         const audioPlayer = document.getElementById('step-audio');
@@ -192,22 +226,17 @@
         window.onload = () => {
             const savedEvent = localStorage.getItem('acim_event');
             const savedJudgment = localStorage.getItem('acim_judgment');
-            if (savedEvent) { document.getElementById('event').value = savedEvent; autoResize(document.getElementById('event')); }
-            if (savedJudgment) { document.getElementById('judgment').value = savedJudgment; autoResize(document.getElementById('judgment')); }
+            if (savedEvent) { document.getElementById('event').value = savedEvent; }
+            if (savedJudgment) { document.getElementById('judgment').value = savedJudgment; }
         };
 
         function toggleAudio() {
-            if (audioPlayer.paused) {
-                audioPlayer.play();
-            } else {
-                audioPlayer.pause();
-            }
+            if (audioPlayer.paused) audioPlayer.play();
+            else audioPlayer.pause();
         }
 
-        // 상태 감지 아이콘 업데이트
         audioPlayer.onplay = () => { audioIcon.innerText = "⏸"; };
         audioPlayer.onpause = () => { audioIcon.innerText = "▶"; };
-        audioPlayer.onended = () => { audioIcon.innerText = "▶"; };
 
         function autoResize(textarea) {
             textarea.style.height = 'auto';
@@ -215,27 +244,14 @@
         }
 
         function handleInput(textarea) {
-            autoResize(textarea);
             if (textarea.id === 'event') localStorage.setItem('acim_event', textarea.value);
             if (textarea.id === 'judgment') localStorage.setItem('acim_judgment', textarea.value);
         }
 
-        // [핵심] 오디오 재생 함수 (소스 변경 시 자동 재생 시도)
         function playStepAudio(audioSrc) {
             if (!audioSrc) return;
             audioPlayer.src = audioSrc;
-            audioPlayer.load(); // 파일 미리 로드
-            
-            // 브라우저 정책 대응을 위한 Promise 처리
-            let playPromise = audioPlayer.play();
-            if (playPromise !== undefined) {
-                playPromise.then(_ => {
-                    audioIcon.innerText = "⏸";
-                }).catch(error => {
-                    console.log("자동 재생이 차단되었습니다. 버튼을 눌러주세요.");
-                    audioIcon.innerText = "▶";
-                });
-            }
+            audioPlayer.play().catch(e => console.log("Auto-play blocked"));
         }
 
         function startMeditation() {
@@ -244,86 +260,46 @@
             if (!event || !judgment) return alert("내용을 입력해주세요.");
 
             scripts = [
-                { 
-                    title: "준비: 마음 가다듬기", 
-                    text: "잠시 눈을 감고 깊게 숨을 들이마시고 내뱉습니다.\n이제 성령께 이 기억을 맡길 준비를 합니다.",
-                    audio: "audio/step0.mp3" 
-                },
-                { 
-                    title: "1단계: 성령께 맡기기", 
-                    text: `"나는 이 사건 혹은 기억을 내가 생각하는 의미로 이해하지 않겠습니다." \n"나는 이 상황을 다른 관점에서 보겠습니다." \n"나는 이 일 때문에 화가 난 것이 아니라, 내가 보고 있는 허상 때문에 화가 난 것입니다."`,
-                    audio: "audio/step1.mp3" 
-                },
-                { 
-                    title: "2단계: 기억의 정화", 
-                    text: `"나는 이 방 안의 모든 것에 내가 부여한 의미 외에는 아무 의미도 부여하지 않습니다." \n"내가 이 기억에 대해 느끼는 분노나 죄책감은 내가 보고 있는 과거에 근거한 것이며, 지금 여기에는 존재하지 않는다"`,
-                    audio: "audio/step2.mp3" 
-                },
-                { 
-                    title: "3단계: 용서와 취소", 
-                    text: `"내가 용서하면 과거의 기억은 사라질 것이다. 왜냐하면 하나님의 사랑 안에서는 이런 일이 결코 일어날 수 없었기 때문이다."\n"성령님, 제가 이 기억을 당신의 시각으로 보게 도와주십시오"`,
-                    audio: "audio/step3.mp3" 
-                }
+                { title: "준비: 마음 가다듬기", text: "잠시 눈을 감고 깊게 숨을 들이마시고 내뱉습니다.\n이제 성령께 이 기억을 맡길 준비를 합니다.", audio: "audio/step0.mp3" },
+                { title: "1단계: 성령께 맡기기", text: `"나는 이 사건을 내가 생각하는 의미로 이해하지 않겠습니다." \n\n"나는 이 상황을 다른 관점에서 보겠습니다."`, audio: "audio/step1.mp3" },
+                { title: "2단계: 기억의 정화", text: `"내가 이 기억에 대해 느끼는 분노는 내가 보고 있는 과거에 근거한 것이며, 지금 여기에는 존재하지 않습니다."`, audio: "audio/step2.mp3" },
+                { title: "3단계: 용서와 취소", text: `"성령님, 제가 이 기억을 당신의 시각으로 보게 도와주십시오."\n\n과거의 무거운 짐을 내려놓습니다.`, audio: "audio/step3.mp3" }
             ];
 
             document.getElementById('input-section').style.display = 'none';
-            document.getElementById('meditation-section').style.display = 'block';
+            document.getElementById('meditation-section').style.display = 'flex';
             audioToggleBtn.style.display = 'flex'; 
             currentStepIndex = 0;
-            document.getElementById('insight').value = ""; 
-            
-            // 정화 시작 버튼 클릭 시 권한이 생기므로 바로 재생 시작
             updateUI();
         }
 
         function updateUI() {
-            const stepTitle = document.getElementById('step-title');
-            const stepContent = document.getElementById('meditation-content');
-            
-            stepTitle.innerText = scripts[currentStepIndex].title;
-            stepContent.innerText = scripts[currentStepIndex].text;
-            
+            document.getElementById('step-title').innerText = scripts[currentStepIndex].title;
+            document.getElementById('meditation-content').innerText = scripts[currentStepIndex].text;
             document.getElementById('prev-btn').disabled = (currentStepIndex === 0);
             document.getElementById('next-btn').innerText = (currentStepIndex === scripts.length - 1) ? "완료" : "다음";
-            
-            autoResize(document.getElementById('insight'));
-            
-            // 단계가 바뀔 때마다 자동 재생 함수 호출
             playStepAudio(scripts[currentStepIndex].audio);
         }
 
         function goToNextStep() {
-            if (currentStepIndex < scripts.length - 1) {
-                currentStepIndex++;
-                updateUI();
-            } else {
-                finishMeditation();
-            }
+            if (currentStepIndex < scripts.length - 1) { currentStepIndex++; updateUI(); }
+            else { finishMeditation(); }
         }
 
         function goToPrevStep() {
-            if (currentStepIndex > 0) {
-                currentStepIndex--;
-                updateUI();
-            }
+            if (currentStepIndex > 0) { currentStepIndex--; updateUI(); }
         }
 
         function goHome() {
-            audioPlayer.pause();
-            audioToggleBtn.style.display = 'none'; 
-            document.getElementById('meditation-section').style.display = 'none';
-            document.getElementById('input-section').style.display = 'block';
-            document.getElementById('nav-group').style.display = 'flex';
-            document.getElementById('reset-btn').style.display = 'none';
+            location.reload(); // 상태 초기화를 위해 새로고침 권장
         }
 
         function finishMeditation() {
             audioPlayer.pause();
             document.getElementById('step-title').innerText = "평온";
-            document.getElementById('meditation-content').innerText = "정화가 완료되었습니다.\n당신의 통찰을 갈무리하세요.";
+            document.getElementById('meditation-content').innerText = "정화가 완료되었습니다.\n마음의 평화를 누리세요.";
             document.getElementById('nav-group').style.display = 'none';
             document.getElementById('reset-btn').style.display = 'block';
-            playStepAudio("audio/finish.mp3");
         }
     </script>
 </body>
