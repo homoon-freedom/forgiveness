@@ -9,6 +9,8 @@
             --bg-color: #ffffff;
             --card-bg: #ffffff;
             --primary-color: #5856d6;
+            --success-color: #34c759;
+            --info-color: #007aff;
             --text-color: #1c1c1e;
             --secondary-text: #8e8e93;
             --font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -25,16 +27,15 @@
 
         .container {
             width: 100%; max-width: 100%; background: var(--card-bg);
-            padding: 1rem; /* 모바일 여백 소폭 축소 */
-            box-sizing: border-box; position: relative;
+            padding: 1rem; box-sizing: border-box; position: relative;
             display: flex; flex-direction: column;
         }
 
-        /* 상단 관리 영역 최적화 (밀림 방지) */
+        /* 상단 관리 영역 레이아웃 수정 */
         .admin-header {
             display: grid; 
             grid-template-columns: 1fr 1fr; 
-            gap: 6px; /* 간격 축소 */
+            gap: 6px; 
             margin-bottom: 0.8rem; 
             padding: 10px; 
             background: #f2f2f7; 
@@ -43,28 +44,39 @@
         }
         
         .admin-header input { 
-            width: 100%; /* 너비 100% */
-            min-width: 0; /* grid 내부 밀림 방지 핵심 */
-            padding: 8px; 
-            border: 1px solid #e5e5ea; 
-            border-radius: 6px; 
-            font-size: 0.8rem; /* 폰트 축소 */
-            background: #fff;
-            box-sizing: border-box;
+            width: 100%; min-width: 0; padding: 8px; 
+            border: 1px solid #e5e5ea; border-radius: 8px; 
+            font-size: 0.85rem; background: #fff; box-sizing: border-box;
         }
 
-        .admin-btns { grid-column: span 2; display: flex; gap: 4px; margin-top: 4px; }
+        /* 버튼 3개를 나란히 배치 */
+        .admin-btns { 
+            grid-column: span 2; 
+            display: flex; 
+            gap: 5px; 
+            margin-top: 8px; 
+        }
         
         .small-btn { 
-            flex: 1; padding: 10px 4px; border: none; border-radius: 6px; 
-            font-size: 0.75rem; /* 버튼 폰트 축소 */
-            font-weight: 600; cursor: pointer; 
-            white-space: nowrap; /* 글자 줄바꿈 방지 */
+            flex: 1; padding: 10px 2px; border: none; border-radius: 8px; 
+            font-size: 0.75rem; font-weight: 700; cursor: pointer; 
+            white-space: nowrap; transition: all 0.2s;
+            display: flex; align-items: center; justify-content: center;
         }
-        .save-btn { background-color: #34c759; color: white; }
-        .list-btn { background-color: #007aff; color: white; }
+        
+        .save-btn { background-color: var(--success-color); color: white; }
+        .list-btn { background-color: var(--info-color); color: white; }
+        
+        /* 사각형 오디오 버튼 스타일 */
+        .audio-btn-sq { 
+            background-color: #e5e5ea; color: var(--text-color); 
+            min-width: 60px; /* 재생 아이콘 공간 확보 */
+        }
+        .audio-btn-sq.playing {
+            background-color: #ff9500; color: white;
+        }
 
-        h1 { font-size: 1.2rem; font-weight: 700; text-align: center; margin: 0.3rem 0 1rem; }
+        h1 { font-size: 1.25rem; font-weight: 700; text-align: center; margin: 0.3rem 0 1rem; }
         label { display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.4rem; color: var(--text-color); }
 
         textarea {
@@ -73,31 +85,23 @@
             line-height: 1.5; box-sizing: border-box; resize: none; margin-bottom: 0.8rem;
         }
 
-        .audio-control {
-            position: absolute; top: 10px; right: 10px; width: 32px; height: 32px;
-            border-radius: 50%; background: #f2f2f7; display: none; 
-            justify-content: center; align-items: center; cursor: pointer; border: none; color: var(--primary-color);
-            z-index: 10;
-        }
-
         .content-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
         
         button.main-btn {
             width: 100%; padding: 16px; background-color: var(--primary-color); color: white;
-            border: none; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; 
+            border: none; border-radius: 12px; font-size: 1.05rem; font-weight: 700; cursor: pointer; 
             margin-top: auto;
         }
 
         .meditation-mode { display: none; flex-direction: column; height: 100%; }
         .current-step-text { 
-            font-size: 1rem; line-height: 1.7; margin: 1.5rem 0; text-align: center; 
+            font-size: 1.05rem; line-height: 1.7; margin: 1.5rem 0; text-align: center; 
             flex: 1; display: flex; align-items: center; justify-content: center; white-space: pre-line; 
         }
         .button-group { display: flex; gap: 8px; margin-top: auto; padding-bottom: 5px; }
-        .nav-button { flex: 1; padding: 16px 4px; background-color: #f2f2f7; color: var(--text-color); font-size: 0.9rem; font-weight: 600; border-radius: 10px; border: none; }
+        .nav-button { flex: 1; padding: 16px 4px; background-color: #f2f2f7; color: var(--text-color); font-size: 0.95rem; font-weight: 600; border-radius: 10px; border: none; }
         .nav-button.primary { background-color: var(--primary-color); color: white; }
 
-        /* 목록 모달 */
         .modal {
             display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.6); z-index: 1000;
@@ -112,15 +116,17 @@
 <body>
 
     <div class="container" id="main-container">
-        <button id="audio-toggle" class="audio-control" onclick="toggleAudio()"><span id="audio-icon">▶</span></button>
         <audio id="step-audio" preload="auto"></audio>
 
-        <!-- 최적화된 상단 헤더 -->
+        <!-- 상단 헤더: 버튼 3개가 나란히 배치됨 -->
         <div class="admin-header">
             <input type="text" id="user-name" placeholder="이름">
             <input type="text" id="event-title" placeholder="사건명">
             <div class="admin-btns">
                 <button class="small-btn save-btn" onclick="saveToCloud()">내용 저장</button>
+                <button id="audio-toggle-sq" class="small-btn audio-btn-sq" onclick="toggleAudio()">
+                    <span id="audio-icon">▶ 재생</span>
+                </button>
                 <button class="small-btn list-btn" onclick="openModal()">저장 목록</button>
             </div>
         </div>
@@ -134,12 +140,11 @@
             <button class="main-btn" onclick="startMeditation()">정화 시작하기</button>
         </div>
 
-        <!-- 명상 섹션 (기존 로직 유지) -->
         <div id="meditation-section" class="meditation-mode">
-            <h2 id="step-title" style="font-size: 0.8rem; color: var(--secondary-text); text-align:center;">준비</h2>
+            <h2 id="step-title" style="font-size: 0.85rem; color: var(--secondary-text); text-align:center; letter-spacing: 1px;">단계</h2>
             <div id="meditation-content" class="current-step-text"></div>
             <div>
-                <label id="insight-label">현재 단계의 통찰</label>
+                <label id="insight-label">통찰 기록</label>
                 <textarea id="insight" style="min-height: 100px;" placeholder="느껴지는 것을 적어보세요..." oninput="saveCurrentInsight()"></textarea>
             </div>
             <div class="button-group" id="nav-group">
@@ -162,7 +167,6 @@
     </div>
 
     <script>
-        /* [스크립트 로직은 이전과 동일하게 유지] */
         let currentStepIndex = 0;
         let stepInsights = {};
         const scripts = [
@@ -174,6 +178,21 @@
 
         const audioPlayer = document.getElementById('step-audio');
         const audioIcon = document.getElementById('audio-icon');
+        const audioBtn = document.getElementById('audio-toggle-sq');
+
+        function toggleAudio() {
+            if (audioPlayer.paused) audioPlayer.play();
+            else audioPlayer.pause();
+        }
+
+        audioPlayer.onplay = () => { 
+            audioIcon.innerText = "⏸ 정지"; 
+            audioBtn.classList.add('playing');
+        };
+        audioPlayer.onpause = () => { 
+            audioIcon.innerText = "▶ 재생"; 
+            audioBtn.classList.remove('playing');
+        };
 
         function saveCurrentInsight() { stepInsights[currentStepIndex] = document.getElementById('insight').value; }
 
@@ -197,26 +216,27 @@
         function openModal() {
             const listEl = document.getElementById('record-list');
             listEl.innerHTML = '';
-            for (let i = localStorage.length - 1; i >= 0; i--) {
-                const key = localStorage.key(i);
-                if (key.startsWith('ACIM_REC_')) {
-                    const d = JSON.parse(localStorage.getItem(key));
-                    const item = document.createElement('div');
-                    item.style.cssText = "padding:12px 0; border-bottom:1px solid #f2f2f7; display:flex; justify-content:space-between; align-items:center;";
-                    item.innerHTML = `
-                        <div style="cursor:pointer; flex:1;" onclick="loadRecord('${key}')">
-                            <div style="font-weight:600; font-size:0.9rem;">${d.user} - ${d.title}</div>
-                            <div style="font-size:0.75rem; color:#8e8e93;">${d.date}</div>
-                        </div>
-                        <button onclick="deleteRecord('${key}')" style="color:#ff3b30; border:none; background:none; font-size:0.8rem;">삭제</button>
-                    `;
-                    listEl.appendChild(item);
-                }
-            }
+            const keys = [];
+            for(let i=0; i<localStorage.length; i++) if(localStorage.key(i).startsWith('ACIM_REC_')) keys.push(localStorage.key(i));
+            keys.sort().reverse();
+            keys.forEach(key => {
+                const d = JSON.parse(localStorage.getItem(key));
+                const item = document.createElement('div');
+                item.style.cssText = "padding:12px 0; border-bottom:1px solid #f2f2f7; display:flex; justify-content:space-between; align-items:center;";
+                item.innerHTML = `
+                    <div style="cursor:pointer; flex:1;" onclick="loadRecord('${key}')">
+                        <div style="font-weight:600; font-size:0.9rem;">${d.user} - ${d.title}</div>
+                        <div style="font-size:0.75rem; color:#8e8e93;">${d.date}</div>
+                    </div>
+                    <button onclick="deleteRecord('${key}')" style="color:#ff3b30; border:none; background:none; font-size:0.8rem;">삭제</button>
+                `;
+                listEl.appendChild(item);
+            });
             document.getElementById('list-modal').style.display = 'flex';
         }
 
         function closeModal() { document.getElementById('list-modal').style.display = 'none'; }
+        
         function loadRecord(key) {
             const data = JSON.parse(localStorage.getItem(key));
             document.getElementById('user-name').value = data.user;
@@ -226,13 +246,13 @@
             stepInsights = data.insights || {};
             closeModal();
         }
+
         function deleteRecord(key) { if(confirm("삭제할까요?")) { localStorage.removeItem(key); openModal(); } }
 
         function startMeditation() {
             if (!document.getElementById('event').value) return alert("내용을 입력해주세요.");
             document.getElementById('input-section').style.display = 'none';
             document.getElementById('meditation-section').style.display = 'flex';
-            document.getElementById('audio-toggle').style.display = 'flex';
             currentStepIndex = 0;
             updateUI();
         }
@@ -244,11 +264,14 @@
             document.getElementById('insight').value = stepInsights[currentStepIndex] || "";
             document.getElementById('prev-btn').disabled = (currentStepIndex === 0);
             document.getElementById('next-btn').innerText = (currentStepIndex === scripts.length - 1) ? "완료" : "다음";
-            playStepAudio(scripts[currentStepIndex].audio);
+            
+            audioPlayer.src = scripts[currentStepIndex].audio;
+            audioPlayer.play().catch(() => {});
         }
 
         function goToNextStep() { if (currentStepIndex < scripts.length - 1) { currentStepIndex++; updateUI(); } else { finishMeditation(); } }
         function goToPrevStep() { if (currentStepIndex > 0) { currentStepIndex--; updateUI(); } }
+        
         function finishMeditation() {
             audioPlayer.pause();
             document.getElementById('step-title').innerText = "평온";
@@ -257,10 +280,6 @@
             document.getElementById('reset-btn').style.display = 'block';
         }
         function goHome() { location.reload(); }
-        function playStepAudio(src) { audioPlayer.src = src; audioPlayer.play().catch(() => {}); }
-        function toggleAudio() { if (audioPlayer.paused) audioPlayer.play(); else audioPlayer.pause(); }
-        audioPlayer.onplay = () => { audioIcon.innerText = "⏸"; };
-        audioPlayer.onpause = () => { audioIcon.innerText = "▶"; };
         window.onclick = (e) => { if (e.target == document.getElementById('list-modal')) closeModal(); }
     </script>
 </body>
