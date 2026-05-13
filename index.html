@@ -31,25 +31,12 @@
 
         /* 상단 관리 영역 */
         .admin-header {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            margin-bottom: 1.2rem;
-            padding: 12px;
-            background: #f8f8fa;
-            border-radius: 20px;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+            margin-bottom: 1rem; padding: 12px; background: #f8f8fa; border-radius: 20px;
         }
-        .admin-header input {
-            padding: 10px; border: 1px solid #e5e5ea; border-radius: 10px; font-size: 0.85rem;
-        }
-        .admin-btns {
-            grid-column: span 2;
-            display: flex; gap: 6px; margin-top: 8px;
-        }
-        .small-btn {
-            flex: 1; padding: 10px; border: none; border-radius: 10px; 
-            font-size: 0.8rem; font-weight: 600; cursor: pointer;
-        }
+        .admin-header input { padding: 10px; border: 1px solid #e5e5ea; border-radius: 10px; font-size: 0.85rem; }
+        .admin-btns { grid-column: span 2; display: flex; gap: 6px; margin-top: 8px; }
+        .small-btn { flex: 1; padding: 10px; border: none; border-radius: 10px; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
         .save-btn { background-color: #34c759; color: white; }
         .list-btn { background-color: #007aff; color: white; }
 
@@ -88,13 +75,8 @@
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .modal-header h3 { margin: 0; font-size: 1.1rem; }
-        .close-modal { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--secondary-text); }
-
         .record-list { flex: 1; overflow-y: auto; list-style: none; padding: 0; margin: 0; }
-        .record-item {
-            padding: 15px; border-bottom: 1px solid #f2f2f7; display: flex; justify-content: space-between; align-items: center;
-        }
+        .record-item { padding: 15px; border-bottom: 1px solid #f2f2f7; display: flex; justify-content: space-between; align-items: center; }
         .record-info { flex: 1; cursor: pointer; }
         .record-info .title { font-weight: 600; font-size: 0.95rem; display: block; }
         .record-info .meta { font-size: 0.75rem; color: var(--secondary-text); }
@@ -114,7 +96,6 @@
         <button id="audio-toggle" class="audio-control" onclick="toggleAudio()"><span id="audio-icon">▶</span></button>
         <audio id="step-audio" preload="auto"></audio>
 
-        <!-- 상단 관리자 영역 -->
         <div class="admin-header">
             <input type="text" id="user-name" placeholder="사용자 이름">
             <input type="text" id="event-title" placeholder="사건명">
@@ -134,36 +115,35 @@
         </div>
 
         <div id="meditation-section" class="meditation-mode">
-            <h2 id="step-title" style="font-size: 0.8rem; color: var(--secondary-text); text-align:center;">단계</h2>
+            <h2 id="step-title" style="font-size: 0.8rem; color: var(--secondary-text); text-align:center; letter-spacing: 1px;">단계</h2>
             <div id="meditation-content" class="current-step-text"></div>
             <div>
-                <label>지금 이 순간의 통찰</label>
-                <textarea id="insight" style="min-height: 80px;" placeholder="떠오르는 통찰을 기록하세요..."></textarea>
+                <label id="insight-label">현재 단계의 통찰</label>
+                <textarea id="insight" style="min-height: 100px;" placeholder="느껴지는 것을 적어보세요..." oninput="saveCurrentInsight()"></textarea>
             </div>
             <div class="button-group" id="nav-group">
                 <button id="prev-btn" class="nav-button" onclick="goToPrevStep()">이전</button>
                 <button id="home-btn" class="nav-button" onclick="goHome()">처음</button>
                 <button id="next-btn" class="nav-button primary" onclick="goToNextStep()">다음</button>
             </div>
-            <button id="reset-btn" class="main-btn" style="display:none;" onclick="resetAll()">새로운 정화 시작</button>
+            <button id="reset-btn" class="main-btn" style="display:none;" onclick="goHome()">새로운 정화 시작</button>
         </div>
 
-        <!-- 저장 목록 모달 -->
         <div id="list-modal" class="modal">
             <div class="modal-content">
                 <div class="modal-header">
                     <h3>저장된 정화 기록</h3>
-                    <button class="close-modal" onclick="closeModal()">&times;</button>
+                    <button style="border:none; background:none; font-size:1.5rem;" onclick="closeModal()">&times;</button>
                 </div>
-                <ul class="record-list" id="record-list">
-                    <!-- 리스트가 자바스크립트로 생성됨 -->
-                </ul>
+                <ul class="record-list" id="record-list"></ul>
             </div>
         </div>
     </div>
 
     <script>
         let currentStepIndex = 0;
+        let stepInsights = {}; // 단계별 통찰 저장 객체
+
         let scripts = [
             { title: "준비: 마음 가다듬기", text: "잠시 눈을 감고 깊게 숨을 들이마시고 내뱉습니다.\n이제 성령께 이 기억을 맡길 준비를 합니다.", audio: "audio/step0.mp3" },
             { title: "1단계: 성령께 맡기기", text: `"나는 이 사건을 내가 생각하는 의미로 이해하지 않겠습니다." \n\n"나는 이 상황을 다른 관점에서 보겠습니다."`, audio: "audio/step1.mp3" },
@@ -172,60 +152,53 @@
         ];
 
         const audioPlayer = document.getElementById('step-audio');
-        const audioToggleBtn = document.getElementById('audio-toggle');
         const audioIcon = document.getElementById('audio-icon');
 
-        // 저장 기능
+        // 단계별 통찰 입력 시 즉시 임시 저장
+        function saveCurrentInsight() {
+            stepInsights[currentStepIndex] = document.getElementById('insight').value;
+        }
+
         function saveToCloud() {
             const user = document.getElementById('user-name').value.trim();
             const title = document.getElementById('event-title').value.trim();
-            if(!user || !title) return alert("사용자 이름과 사건명을 입력해주세요.");
+            if(!user || !title) return alert("이름과 사건명을 입력해주세요.");
 
             const data = {
-                user: user,
-                title: title,
+                user: user, title: title,
                 event: document.getElementById('event').value,
                 judgment: document.getElementById('judgment').value,
-                insight: document.getElementById('insight').value,
+                insights: stepInsights, // 단계별 통찰 전체 저장
                 date: new Date().toLocaleString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
             };
 
-            const key = `ACIM_REC_${Date.now()}`; // 고유 키 생성
-            localStorage.setItem(key, JSON.stringify(data));
-            alert("기록이 저장되었습니다.");
+            localStorage.setItem(`ACIM_REC_${Date.now()}`, JSON.stringify(data));
+            alert("전체 내용이 저장되었습니다.");
         }
 
-        // 모달 제어 및 리스트 출력
         function openModal() {
             const listEl = document.getElementById('record-list');
             listEl.innerHTML = '';
-            let hasData = false;
-
+            let count = 0;
             for (let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i);
                 if (key.startsWith('ACIM_REC_')) {
-                    hasData = true;
+                    count++;
                     const data = JSON.parse(localStorage.getItem(key));
                     const li = document.createElement('li');
                     li.className = 'record-item';
-                    li.innerHTML = `
-                        <div class="record-info" onclick="loadRecord('${key}')">
-                            <span class="title">${data.user} - ${data.title}</span>
-                            <span class="meta">${data.date}</span>
-                        </div>
-                        <button class="del-btn" onclick="deleteRecord('${key}')">삭제</button>
-                    `;
+                    li.innerHTML = `<div class="record-info" onclick="loadRecord('${key}')">
+                        <span class="title">${data.user} - ${data.title}</span>
+                        <span class="meta">${data.date}</span>
+                    </div><button class="del-btn" onclick="deleteRecord('${key}')">삭제</button>`;
                     listEl.appendChild(li);
                 }
             }
-
-            if(!hasData) listEl.innerHTML = '<li style="text-align:center; padding:20px; color:#8e8e93;">저장된 기록이 없습니다.</li>';
+            if(count === 0) listEl.innerHTML = '<li style="text-align:center; padding:20px; color:#8e8e93;">기록이 없습니다.</li>';
             document.getElementById('list-modal').style.display = 'flex';
         }
 
-        function closeModal() {
-            document.getElementById('list-modal').style.display = 'none';
-        }
+        function closeModal() { document.getElementById('list-modal').style.display = 'none'; }
 
         function loadRecord(key) {
             const data = JSON.parse(localStorage.getItem(key));
@@ -233,32 +206,35 @@
             document.getElementById('event-title').value = data.title;
             document.getElementById('event').value = data.event;
             document.getElementById('judgment').value = data.judgment;
-            document.getElementById('insight').value = data.insight || "";
+            stepInsights = data.insights || {}; // 저장된 단계별 통찰 복구
             closeModal();
-            alert(`[${data.title}] 기록을 불러왔습니다.`);
+            alert("기록을 불러왔습니다. 정화 시작 시 통찰 내용도 복구됩니다.");
         }
 
         function deleteRecord(key) {
-            if(confirm("이 기록을 삭제하시겠습니까?")) {
-                localStorage.removeItem(key);
-                openModal(); // 리스트 갱신
-            }
+            if(confirm("삭제하시겠습니까?")) { localStorage.removeItem(key); openModal(); }
         }
 
-        // 명상 로직
         function startMeditation() {
             if (!document.getElementById('event').value) return alert("내용을 입력해주세요.");
             document.getElementById('input-section').style.display = 'none';
             document.getElementById('meditation-section').style.display = 'flex';
-            audioToggleBtn.style.display = 'flex'; 
+            document.getElementById('audio-toggle').style.display = 'flex';
+            currentStepIndex = 0;
             updateUI();
         }
 
         function updateUI() {
             document.getElementById('step-title').innerText = scripts[currentStepIndex].title;
             document.getElementById('meditation-content').innerText = scripts[currentStepIndex].text;
+            document.getElementById('insight-label').innerText = `${scripts[currentStepIndex].title.split(':')[0]} 통찰`;
+            
+            // 현재 단계에 해당하는 통찰 내용 불러오기
+            document.getElementById('insight').value = stepInsights[currentStepIndex] || "";
+            
             document.getElementById('prev-btn').disabled = (currentStepIndex === 0);
             document.getElementById('next-btn').innerText = (currentStepIndex === scripts.length - 1) ? "완료" : "다음";
+            
             playStepAudio(scripts[currentStepIndex].audio);
         }
 
@@ -280,26 +256,11 @@
         }
 
         function goHome() { location.reload(); }
-        function resetAll() { location.reload(); }
-
-        function playStepAudio(src) {
-            audioPlayer.src = src;
-            audioPlayer.play().catch(() => {});
-        }
-
-        function toggleAudio() {
-            if (audioPlayer.paused) audioPlayer.play();
-            else audioPlayer.pause();
-        }
-
+        function playStepAudio(src) { audioPlayer.src = src; audioPlayer.play().catch(() => {}); }
+        function toggleAudio() { if (audioPlayer.paused) audioPlayer.play(); else audioPlayer.pause(); }
         audioPlayer.onplay = () => { audioIcon.innerText = "⏸"; };
         audioPlayer.onpause = () => { audioIcon.innerText = "▶"; };
-
-        // 배경 클릭 시 모달 닫기
-        window.onclick = function(event) {
-            const modal = document.getElementById('list-modal');
-            if (event.target == modal) closeModal();
-        }
+        window.onclick = (e) => { if (e.target == document.getElementById('list-modal')) closeModal(); }
     </script>
 </body>
 </html>
