@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACIM 마음 정화 명상</title>
+    <style>
+        :root {
+            --bg-color: #f2f2f7;
+            --card-bg: #ffffff;
+            --primary-color: #5856d6;
+            --text-color: #1c1c1e;
+            --secondary-text: #8e8e93;
+            --font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 480px;
+            background: var(--card-bg);
+            padding: 2rem 1.5rem;
+            border-radius: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+            box-sizing: border-box;
+        }
+
+        h1 { font-size: 1.45rem; font-weight: 700; text-align: center; margin-bottom: 1.5rem; }
+        
+        /* 제목과 입력창 간격 축소 */
+        label { 
+            display: block; 
+            margin-top: 1rem; /* 상단 간격 축소 */
+            font-weight: 600; 
+            font-size: 0.85rem; 
+            margin-bottom: 0.4rem; /* 제목과 입력창 사이 간격 축소 */
+            padding-left: 4px;
+            color: var(--text-color);
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 65px;
+            max-height: 250px;
+            padding: 12px 14px;
+            border: 1px solid #e5e5ea;
+            border-radius: 14px;
+            background-color: #fafafa;
+            font-family: var(--font-family);
+            font-size: 0.95rem;
+            line-height: 1.45;
+            box-sizing: border-box;
+            overflow-y: hidden;
+            resize: none;
+            transition: all 0.2s;
+        }
+
+        textarea:focus { outline: none; border-color: var(--primary-color); background-color: #ffffff; }
+
+        .insight-box {
+            margin-top: 0.5rem;
+            border: 1px dashed #d1d1d6;
+            background-color: #fcfcfd;
+            min-height: 45px;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 1.5rem;
+            padding: 16px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 1.5rem;
+        }
+
+        .nav-button {
+            flex: 1;
+            padding: 13px 8px;
+            background-color: #e5e5ea;
+            color: var(--text-color);
+            font-size: 0.88rem;
+            border-radius: 12px;
+            border: none;
+        }
+
+        .nav-button.primary { background-color: var(--primary-color); color: white; }
+        .nav-button.home { background-color: #f2f2f7; color: var(--secondary-text); }
+        .nav-button:disabled { opacity: 0.2; cursor: not-allowed; }
+
+        .meditation-mode { display: none; text-align: center; }
+        .current-step-text { 
+            font-size: 1.05rem; 
+            line-height: 1.7; 
+            font-weight: 500;
+            margin-top: 0.5rem; 
+            word-break: keep-all;
+            min-height: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="main-container">
+        <audio id="step-audio"></audio>
+
+        <div id="input-section">
+            <h1>마음 정화 명상</h1>
+            <label>비우고 싶은 기억</label>
+            <textarea id="event" rows="1" placeholder="어떤 장면이 떠오르나요?" oninput="handleInput(this)"></textarea>
+            <label>마음의 판단</label>
+            <textarea id="judgment" rows="1" placeholder="내 생각에 그 일은 어떠했나요?" oninput="handleInput(this)"></textarea>
+            <button onclick="startMeditation()">정화 시작하기</button>
+        </div>
+
+        <div id="meditation-section" class="meditation-mode">
+            <h2 id="step-title" style="font-size: 0.75rem; color: var(--secondary-text); letter-spacing: 1px; margin-bottom: 0.5rem;">준비</h2>
+            <div id="meditation-content" class="current-step-text"></div>
+            
+            <label style="text-align: left; margin-top: 1.5rem;">새롭게 떠오른 생각/감정</label>
+            <textarea id="insight" class="insight-box" rows="1" placeholder="지금 느껴지는 것을 적어보세요..." oninput="autoResize(this)"></textarea>
+
+            <div class="button-group" id="nav-group">
+                <button id="prev-btn" class="nav-button" onclick="goToPrevStep()">이전</button>
+                <button id="home-btn" class="nav-button home" onclick="goHome()">처음으로</button>
+                <button id="next-btn" class="nav-button primary" onclick="goToNextStep()">다음</button>
+            </div>
+            
+            <button id="reset-btn" style="display:none;" onclick="goHome()">새로운 정화 시작</button>
+        </div>
+    </div>
+
+    <script>
+        let currentStepIndex = 0;
+        let scripts = [];
+        const audioPlayer = document.getElementById('step-audio');
+
+        window.onload = () => {
+            const savedEvent = localStorage.getItem('acim_event');
+            const savedJudgment = localStorage.getItem('acim_judgment');
+            if (savedEvent) { document.getElementById('event').value = savedEvent; autoResize(document.getElementById('event')); }
+            if (savedJudgment) { document.getElementById('judgment').value = savedJudgment; autoResize(document.getElementById('judgment')); }
+        };
+
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+        }
+
+        function handleInput(textarea) {
+            autoResize(textarea);
+            if (textarea.id === 'event') localStorage.setItem('acim_event', textarea.value);
+            if (textarea.id === 'judgment') localStorage.setItem('acim_judgment', textarea.value);
+        }
+
+        function playStepAudio(audioSrc) {
+            if (!audioSrc) return;
+            audioPlayer.src = audioSrc;
+            audioPlayer.play().catch(e => console.log("Audio play blocked"));
+        }
+
+        function startMeditation() {
+            const event = document.getElementById('event').value;
+            const judgment = document.getElementById('judgment').value;
+            if (!event || !judgment) return alert("내용을 입력해주세요.");
+
+            scripts = [
+                { 
+                    title: "1단계: 성령께 맡기기", 
+                    text: `"나는 이 사건 혹은 기억을 내가 생각하는 의미로 이해하지 않겠습니다. 나는 이 상황을 다른 관점에서 보겠습니다. 나는 이 일 때문에 화가 난 것이 아니라, 내가 보고 있는 허상 때문에 화가 난 것입니다."`,
+                    audio: "audio/step1.mp3" 
+                },
+                { 
+                    title: "2단계: 기억의 정화", 
+                    text: `"나는 이 방 안의 모든 것에 내가 부여한 의미 외에는 아무 의미도 부여하지 않습니다." 마음속에 떠오르는 과거의 불쾌한 기억들을 하나씩 꺼내어, "내가 이 기억에 대해 느끼는 분노나 죄책감은 내가 보고 있는 과거에 근거한 것이며, 지금 여기에는 존재하지 않는다"라고 선언합니다."`,
+                    audio: "audio/step2.mp3" 
+                },
+                { 
+                    title: "3단계: 용서와 취소", 
+                    text: `"내가 용서하면 과거의 기억은 사라질 것이다. 왜냐하면 하나님의 사랑 안에서는 이런 일이 결코 일어날 수 없었기 때문이다." 고통스러운 기억이 올라올 때, 그 장면을 성령의 빛 앞에 가져다 놓는다고 상상하십시오. 그리고 "성령님, 제가 이 기억을 당신의 시각으로 보게 도와주십시오"라고 요청하는 것이 가장 강력한 정화 방법입니다.`,
+                    audio: "audio/step3.mp3" 
+                }
+            ];
+
+            document.getElementById('input-section').style.display = 'none';
+            document.getElementById('meditation-section').style.display = 'block';
+            currentStepIndex = 0;
+            document.getElementById('insight').value = ""; 
+            updateUI();
+        }
+
+        function updateUI() {
+            const stepTitle = document.getElementById('step-title');
+            const stepContent = document.getElementById('meditation-content');
+            
+            stepTitle.innerText = scripts[currentStepIndex].title;
+            stepContent.innerText = scripts[currentStepIndex].text;
+            
+            document.getElementById('prev-btn').disabled = (currentStepIndex === 0);
+            document.getElementById('next-btn').innerText = (currentStepIndex === scripts.length - 1) ? "완료" : "다음";
+            
+            autoResize(document.getElementById('insight'));
+            playStepAudio(scripts[currentStepIndex].audio);
+        }
+
+        function goToNextStep() {
+            if (currentStepIndex < scripts.length - 1) {
+                currentStepIndex++;
+                updateUI();
+            } else {
+                finishMeditation();
+            }
+        }
+
+        function goToPrevStep() {
+            if (currentStepIndex > 0) {
+                currentStepIndex--;
+                updateUI();
+            }
+        }
+
+        function goHome() {
+            audioPlayer.pause();
+            document.getElementById('meditation-section').style.display = 'none';
+            document.getElementById('input-section').style.display = 'block';
+            document.getElementById('nav-group').style.display = 'flex';
+            document.getElementById('reset-btn').style.display = 'none';
+        }
+
+        function finishMeditation() {
+            audioPlayer.pause();
+            document.getElementById('step-title').innerText = "평온";
+            document.getElementById('meditation-content').innerText = "정화가 완료되었습니다. 당신의 통찰을 갈무리하세요.";
+            document.getElementById('nav-group').style.display = 'none';
+            document.getElementById('reset-btn').style.display = 'block';
+            playStepAudio("audio/finish.mp3");
+        }
+    </script>
+</body>
+</html>
