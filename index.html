@@ -31,7 +31,6 @@
             display: flex; flex-direction: column;
         }
 
-        /* 상단 관리 영역 레이아웃 수정 */
         .admin-header {
             display: grid; 
             grid-template-columns: 1fr 1fr; 
@@ -49,7 +48,6 @@
             font-size: 0.85rem; background: #fff; box-sizing: border-box;
         }
 
-        /* 버튼 3개를 나란히 배치 */
         .admin-btns { 
             grid-column: span 2; 
             display: flex; 
@@ -67,10 +65,9 @@
         .save-btn { background-color: var(--success-color); color: white; }
         .list-btn { background-color: var(--info-color); color: white; }
         
-        /* 사각형 오디오 버튼 스타일 */
         .audio-btn-sq { 
             background-color: #e5e5ea; color: var(--text-color); 
-            min-width: 60px; /* 재생 아이콘 공간 확보 */
+            min-width: 60px;
         }
         .audio-btn-sq.playing {
             background-color: #ff9500; color: white;
@@ -118,7 +115,6 @@
     <div class="container" id="main-container">
         <audio id="step-audio" preload="auto"></audio>
 
-        <!-- 상단 헤더: 버튼 3개가 나란히 배치됨 -->
         <div class="admin-header">
             <input type="text" id="user-name" placeholder="이름">
             <input type="text" id="event-title" placeholder="사건명">
@@ -167,9 +163,10 @@
     </div>
 
     <script>
-        let currentStepIndex = 0;
+        let currentStepIndex = -1; // -1: 메인 화면 상태
         let stepInsights = {};
         const scripts = [
+            { title: "안내: 정화 준비", text: "정화하고 싶은 사건과 판단을 적어주세요.", audio: "audio/step0.mp3" },
             { title: "준비: 마음 가다듬기", text: "잠시 눈을 감고 깊게 숨을 들이마시고 내뱉습니다.\n이제 성령께 이 기억을 맡길 준비를 합니다.", audio: "audio/step1.mp3" },
             { title: "1단계: 성령께 맡기기", text: `"나는 이 사건을 내가 생각하는 의미로 이해하지 않겠습니다." \n\n"나는 이 상황을 다른 관점에서 보겠습니다."`, audio: "audio/step2.mp3" },
             { title: "2단계: 기억의 정화", text: `"내가 이 기억에 대해 느끼는 분노는 내가 보고 있는 과거에 근거한 것이며, 지금 여기에는 존재하지 않습니다."`, audio: "audio/step3.mp3" },
@@ -180,9 +177,24 @@
         const audioIcon = document.getElementById('audio-icon');
         const audioBtn = document.getElementById('audio-toggle-sq');
 
+        // 오디오 재생 토글 및 권한 획득
         function toggleAudio() {
-            if (audioPlayer.paused) audioPlayer.play();
-            else audioPlayer.pause();
+            // 소스가 없거나 초기 상태일 때 Step 0 오디오 로드
+            if (!audioPlayer.src || audioPlayer.src === "") {
+                audioPlayer.src = scripts[0].audio;
+            }
+
+            if (audioPlayer.paused) {
+                const playPromise = audioPlayer.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.log("Autoplay prevented:", error);
+                        alert("재생 권한이 필요합니다. 화면을 터치한 후 다시 눌러주세요.");
+                    });
+                }
+            } else {
+                audioPlayer.pause();
+            }
         }
 
         audioPlayer.onplay = () => { 
@@ -194,13 +206,21 @@
             audioBtn.classList.remove('playing');
         };
 
-        function saveCurrentInsight() { stepInsights[currentStepIndex] = document.getElementById('insight').value; }
+        function saveCurrentInsight() { 
+            if(currentStepIndex >= 0) stepInsights[currentStepIndex] = document.getElementById('insight').value; 
+        }
 
         function saveToCloud() {
             const user = document.getElementById('user-name').value.trim();
             const title = document.getElementById('event-title').value.trim();
             if(!user || !title) return alert("이름과 사건명을 입력해주세요.");
-            const data = { user, title, event: document.getElementById('event').value, judgment: document.getElementById('judgment').value, insights: stepInsights, date: new Date().toLocaleString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) };
+            const data = { 
+                user, title, 
+                event: document.getElementById('event').value, 
+                judgment: document.getElementById('judgment').value, 
+                insights: stepInsights, 
+                date: new Date().toLocaleString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) 
+            };
             let targetKey = `ACIM_REC_${Date.now()}`;
             for (let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i);
@@ -253,24 +273,28 @@
             if (!document.getElementById('event').value) return alert("내용을 입력해주세요.");
             document.getElementById('input-section').style.display = 'none';
             document.getElementById('meditation-section').style.display = 'flex';
-            currentStepIndex = 0;
+            currentStepIndex = 1; // 1단계(마음 가다듬기)부터 시작
             updateUI();
         }
 
         function updateUI() {
-            document.getElementById('step-title').innerText = scripts[currentStepIndex].title;
-            document.getElementById('meditation-content').innerText = scripts[currentStepIndex].text;
-            document.getElementById('insight-label').innerText = `${scripts[currentStepIndex].title.split(':')[0]} 통찰`;
+            const currentContent = scripts[currentStepIndex];
+            document.getElementById('step-title').innerText = currentContent.title;
+            document.getElementById('meditation-content').innerText = currentContent.text;
+            document.getElementById('insight-label').innerText = `${currentContent.title.split(':')[0]} 통찰`;
             document.getElementById('insight').value = stepInsights[currentStepIndex] || "";
-            document.getElementById('prev-btn').disabled = (currentStepIndex === 0);
+            document.getElementById('prev-btn').disabled = (currentStepIndex === 1);
             document.getElementById('next-btn').innerText = (currentStepIndex === scripts.length - 1) ? "완료" : "다음";
             
-            audioPlayer.src = scripts[currentStepIndex].audio;
-            audioPlayer.play().catch(() => {});
+            // 단계 전환 시 오디오 자동 재생
+            audioPlayer.src = currentContent.audio;
+            audioPlayer.play().catch(() => {
+                console.log("자동 재생 대기 중...");
+            });
         }
 
         function goToNextStep() { if (currentStepIndex < scripts.length - 1) { currentStepIndex++; updateUI(); } else { finishMeditation(); } }
-        function goToPrevStep() { if (currentStepIndex > 0) { currentStepIndex--; updateUI(); } }
+        function goToPrevStep() { if (currentStepIndex > 1) { currentStepIndex--; updateUI(); } }
         
         function finishMeditation() {
             audioPlayer.pause();
@@ -279,6 +303,7 @@
             document.getElementById('nav-group').style.display = 'none';
             document.getElementById('reset-btn').style.display = 'block';
         }
+
         function goHome() { location.reload(); }
         window.onclick = (e) => { if (e.target == document.getElementById('list-modal')) closeModal(); }
     </script>
