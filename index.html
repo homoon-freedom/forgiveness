@@ -34,6 +34,7 @@
             border-radius: 30px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.08);
             box-sizing: border-box;
+            position: relative;
         }
 
         h1 { font-size: 1.45rem; font-weight: 700; text-align: center; margin-bottom: 1.5rem; }
@@ -66,6 +67,26 @@
         }
 
         textarea:focus { outline: none; border-color: var(--primary-color); background-color: #ffffff; }
+
+        /* 오디오 컨트롤 버튼 스타일 */
+        .audio-control {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #f2f2f7;
+            display: none; /* 명상 모드에서만 표시 */
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            border: none;
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            transition: all 0.2s;
+        }
+        .audio-control:active { transform: scale(0.9); }
 
         .insight-box {
             margin-top: 0.5rem;
@@ -110,14 +131,13 @@
 
         .meditation-mode { display: none; text-align: center; }
         
-        /* 폰트 단계를 낮추고 줄바꿈 설정을 추가함 */
         .current-step-text { 
             font-size: 0.95rem; 
             line-height: 1.7; 
             font-weight: 500;
             margin-top: 0.5rem; 
             word-break: keep-all;
-            white-space: pre-line; /* \n 줄바꿈 적용 */
+            white-space: pre-line;
             min-height: 140px;
             display: flex;
             align-items: center;
@@ -129,6 +149,11 @@
 <body>
 
     <div class="container" id="main-container">
+        <!-- 오디오 재생/정지 버튼 추가 -->
+        <button id="audio-toggle" class="audio-control" onclick="toggleAudio()">
+            <span id="audio-icon">▶</span>
+        </button>
+
         <audio id="step-audio"></audio>
 
         <div id="input-section">
@@ -161,6 +186,8 @@
         let currentStepIndex = 0;
         let scripts = [];
         const audioPlayer = document.getElementById('step-audio');
+        const audioToggleBtn = document.getElementById('audio-toggle');
+        const audioIcon = document.getElementById('audio-icon');
 
         window.onload = () => {
             const savedEvent = localStorage.getItem('acim_event');
@@ -168,6 +195,22 @@
             if (savedEvent) { document.getElementById('event').value = savedEvent; autoResize(document.getElementById('event')); }
             if (savedJudgment) { document.getElementById('judgment').value = savedJudgment; autoResize(document.getElementById('judgment')); }
         };
+
+        // 오디오 재생/정지 토글 함수
+        function toggleAudio() {
+            if (audioPlayer.paused) {
+                audioPlayer.play();
+                audioIcon.innerText = "⏸";
+            } else {
+                audioPlayer.pause();
+                audioIcon.innerText = "▶";
+            }
+        }
+
+        // 오디오 상태 업데이트 (자동 재생될 때 아이콘 변경 대응)
+        audioPlayer.onplay = () => { audioIcon.innerText = "⏸"; };
+        audioPlayer.onpause = () => { audioIcon.innerText = "▶"; };
+        audioPlayer.onended = () => { audioIcon.innerText = "▶"; };
 
         function autoResize(textarea) {
             textarea.style.height = 'auto';
@@ -183,7 +226,10 @@
         function playStepAudio(audioSrc) {
             if (!audioSrc) return;
             audioPlayer.src = audioSrc;
-            audioPlayer.play().catch(e => console.log("Audio play blocked: ", e));
+            audioPlayer.play().catch(e => {
+                console.log("Audio play blocked: ", e);
+                audioIcon.innerText = "▶";
+            });
         }
 
         function startMeditation() {
@@ -191,7 +237,6 @@
             const judgment = document.getElementById('judgment').value;
             if (!event || !judgment) return alert("내용을 입력해주세요.");
 
-            // step0.mp3를 첫 번째 순서로 포함시켰습니다.
             scripts = [
                 { 
                     title: "준비: 마음 가다듬기", 
@@ -217,6 +262,7 @@
 
             document.getElementById('input-section').style.display = 'none';
             document.getElementById('meditation-section').style.display = 'block';
+            audioToggleBtn.style.display = 'flex'; // 오디오 버튼 표시
             currentStepIndex = 0;
             document.getElementById('insight').value = ""; 
             updateUI();
@@ -254,6 +300,7 @@
 
         function goHome() {
             audioPlayer.pause();
+            audioToggleBtn.style.display = 'none'; // 오디오 버튼 숨김
             document.getElementById('meditation-section').style.display = 'none';
             document.getElementById('input-section').style.display = 'block';
             document.getElementById('nav-group').style.display = 'flex';
