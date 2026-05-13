@@ -38,13 +38,12 @@
 
         h1 { font-size: 1.45rem; font-weight: 700; text-align: center; margin-bottom: 1.5rem; }
         
-        /* 제목과 입력창 간격 축소 */
         label { 
             display: block; 
-            margin-top: 1rem; /* 상단 간격 축소 */
+            margin-top: 1rem; 
             font-weight: 600; 
             font-size: 0.85rem; 
-            margin-bottom: 0.4rem; /* 제목과 입력창 사이 간격 축소 */
+            margin-bottom: 0.4rem; 
             padding-left: 4px;
             color: var(--text-color);
         }
@@ -110,12 +109,15 @@
         .nav-button:disabled { opacity: 0.2; cursor: not-allowed; }
 
         .meditation-mode { display: none; text-align: center; }
+        
+        /* 폰트 단계를 낮추고 줄바꿈 설정을 추가함 */
         .current-step-text { 
-            font-size: 1.0rem; 
+            font-size: 0.95rem; 
             line-height: 1.7; 
             font-weight: 500;
             margin-top: 0.5rem; 
             word-break: keep-all;
+            white-space: pre-line; /* \n 줄바꿈 적용 */
             min-height: 140px;
             display: flex;
             align-items: center;
@@ -133,13 +135,13 @@
             <h1>마음 정화 명상</h1>
             <label>정화하고 싶은 사건이나 과거의 기억</label>
             <textarea id="event" rows="1" placeholder="어떤 장면이 떠오르나요? 떠오른 장면을 상세하게 적어보세요." oninput="handleInput(this)"></textarea>
-            <label>그 사건이나 기억애 대한 나의 당위성이나 판단</label>
+            <label>그 사건이나 기억에 대한 나의 당위성이나 판단</label>
             <textarea id="judgment" rows="1" placeholder="어떤 생각들이 떠오르나요? 떠오르는 생각들을 상세하게 적어보세요." oninput="handleInput(this)"></textarea>
             <button onclick="startMeditation()">정화 시작하기</button>
         </div>
 
         <div id="meditation-section" class="meditation-mode">
-            <h2 id="step-title" style="font-size: 1.1rem; color: var(--secondary-text); letter-spacing: 1px; margin-bottom: 0.5rem;">준비</h2>
+            <h2 id="step-title" style="font-size: 0.75rem; color: var(--secondary-text); letter-spacing: 1px; margin-bottom: 0.5rem;">준비</h2>
             <div id="meditation-content" class="current-step-text"></div>
             
             <label style="text-align: left; margin-top: 1.5rem;">새롭게 떠오른 생각/감정</label>
@@ -181,7 +183,7 @@
         function playStepAudio(audioSrc) {
             if (!audioSrc) return;
             audioPlayer.src = audioSrc;
-            audioPlayer.play().catch(e => console.log("Audio play blocked"));
+            audioPlayer.play().catch(e => console.log("Audio play blocked: ", e));
         }
 
         function startMeditation() {
@@ -189,7 +191,13 @@
             const judgment = document.getElementById('judgment').value;
             if (!event || !judgment) return alert("내용을 입력해주세요.");
 
+            // step0.mp3를 첫 번째 순서로 포함시켰습니다.
             scripts = [
+                { 
+                    title: "준비: 마음 가다듬기", 
+                    text: "잠시 눈을 감고 깊게 숨을 들이마시고 내뱉습니다.\n이제 성령께 이 기억을 맡길 준비를 합니다.",
+                    audio: "audio/step0.mp3" 
+                },
                 { 
                     title: "1단계: 성령께 맡기기", 
                     text: `"나는 이 사건 혹은 기억을 내가 생각하는 의미로 이해하지 않겠습니다." \n"나는 이 상황을 다른 관점에서 보겠습니다." \n"나는 이 일 때문에 화가 난 것이 아니라, 내가 보고 있는 허상 때문에 화가 난 것입니다."`,
@@ -255,7 +263,7 @@
         function finishMeditation() {
             audioPlayer.pause();
             document.getElementById('step-title').innerText = "평온";
-            document.getElementById('meditation-content').innerText = "정화가 완료되었습니다. 당신의 통찰을 갈무리하세요.";
+            document.getElementById('meditation-content').innerText = "정화가 완료되었습니다.\n당신의 통찰을 갈무리하세요.";
             document.getElementById('nav-group').style.display = 'none';
             document.getElementById('reset-btn').style.display = 'block';
             playStepAudio("audio/finish.mp3");
