@@ -24,39 +24,64 @@
 
         .container {
             width: 100%; height: 100%; max-width: 500px; max-height: 900px;
-            background: var(--card-bg); padding: 2.5rem 1.5rem;
+            background: var(--card-bg); padding: 1.5rem;
             box-shadow: 0 20px 40px rgba(0,0,0,0.08); box-sizing: border-box;
             position: relative; display: flex; flex-direction: column; border-radius: 40px; 
         }
 
-        h1 { font-size: 1.6rem; font-weight: 700; text-align: center; margin-bottom: 2rem; }
-        label { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 0.6rem; color: var(--text-color); }
+        /* 상단 관리 영역 */
+        .admin-header {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 1.5rem;
+            padding: 12px;
+            background: #f8f8fa;
+            border-radius: 20px;
+        }
+        .admin-header input {
+            padding: 10px; border: 1px solid #e5e5ea; border-radius: 10px; font-size: 0.85rem;
+        }
+        .admin-btns {
+            grid-column: span 2;
+            display: flex; gap: 8px; margin-top: 8px;
+        }
+        .small-btn {
+            flex: 1; padding: 10px; border: none; border-radius: 10px; 
+            font-size: 0.85rem; font-weight: 600; cursor: pointer;
+        }
+        .save-btn { background-color: #34c759; color: white; }
+        .load-btn { background-color: #007aff; color: white; }
+
+        h1 { font-size: 1.4rem; font-weight: 700; text-align: center; margin-bottom: 1.5rem; margin-top: 0; }
+        label { display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.4rem; color: var(--text-color); }
 
         textarea {
-            width: 100%; padding: 16px; border: 1px solid #e5e5ea; border-radius: 18px;
-            background-color: #f9f9fb; font-family: var(--font-family); font-size: 1rem;
-            line-height: 1.5; box-sizing: border-box; resize: none; transition: all 0.2s; margin-bottom: 1.5rem;
+            width: 100%; padding: 14px; border: 1px solid #e5e5ea; border-radius: 16px;
+            background-color: #ffffff; font-family: var(--font-family); font-size: 0.95rem;
+            line-height: 1.5; box-sizing: border-box; resize: none; transition: all 0.2s; margin-bottom: 1rem;
         }
-        textarea:focus { outline: none; border-color: var(--primary-color); background-color: #ffffff; }
+        textarea:focus { outline: none; border-color: var(--primary-color); }
 
         .audio-control {
-            position: absolute; top: 25px; right: 25px; width: 40px; height: 40px;
+            position: absolute; top: 15px; right: 15px; width: 34px; height: 34px;
             border-radius: 50%; background: #f2f2f7; display: none; 
             justify-content: center; align-items: center; cursor: pointer; border: none; color: var(--primary-color);
+            z-index: 10;
         }
 
         .content-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
         button.main-btn {
-            width: 100%; padding: 20px; background-color: var(--primary-color); color: white;
-            border: none; border-radius: 20px; font-size: 1.1rem; font-weight: 600; cursor: pointer; margin-top: auto;
+            width: 100%; padding: 18px; background-color: var(--primary-color); color: white;
+            border: none; border-radius: 18px; font-size: 1.05rem; font-weight: 600; cursor: pointer; margin-top: auto;
         }
 
-        .button-group { display: flex; gap: 12px; margin-top: auto; padding-bottom: 10px; }
-        .nav-button { flex: 1; padding: 18px 8px; background-color: #f2f2f7; color: var(--text-color); font-size: 1rem; font-weight: 600; border-radius: 16px; border: none; }
+        .button-group { display: flex; gap: 10px; margin-top: auto; padding-bottom: 5px; }
+        .nav-button { flex: 1; padding: 16px 5px; background-color: #f2f2f7; color: var(--text-color); font-size: 0.95rem; font-weight: 600; border-radius: 14px; border: none; }
         .nav-button.primary { background-color: var(--primary-color); color: white; }
 
         .meditation-mode { display: none; flex-direction: column; height: 100%; }
-        .current-step-text { font-size: 1.1rem; line-height: 1.8; margin: 2rem 0; text-align: center; flex: 1; display: flex; align-items: center; justify-content: center; }
+        .current-step-text { font-size: 1rem; line-height: 1.7; margin: 1.5rem 0; text-align: center; flex: 1; display: flex; align-items: center; justify-content: center; white-space: pre-line; }
     </style>
 </head>
 <body>
@@ -65,21 +90,31 @@
         <button id="audio-toggle" class="audio-control" onclick="toggleAudio()"><span id="audio-icon">▶</span></button>
         <audio id="step-audio" preload="auto"></audio>
 
+        <!-- 상단 관리자 영역 -->
+        <div class="admin-header">
+            <input type="text" id="user-name" placeholder="사용자 이름">
+            <input type="text" id="event-title" placeholder="사건명">
+            <div class="admin-btns">
+                <button class="small-btn save-btn" onclick="saveToCloud()">내용 저장하기</button>
+                <button class="small-btn load-btn" onclick="loadFromCloud()">불러오기</button>
+            </div>
+        </div>
+
         <div id="input-section" class="content-wrapper">
             <h1>마음 정화 명상</h1>
             <label>정화하고 싶은 사건/기억</label>
-            <textarea id="event" rows="3" placeholder="내용을 입력하세요..." oninput="saveData()"></textarea>
+            <textarea id="event" rows="3" placeholder="어떤 일이 있었나요?"></textarea>
             <label>나의 판단이나 생각</label>
-            <textarea id="judgment" rows="3" placeholder="내용을 입력하세요..." oninput="saveData()"></textarea>
+            <textarea id="judgment" rows="3" placeholder="어떤 판단을 하고 있나요?"></textarea>
             <button class="main-btn" onclick="startMeditation()">정화 시작하기</button>
         </div>
 
         <div id="meditation-section" class="meditation-mode">
-            <h2 id="step-title" style="font-size: 0.9rem; color: var(--secondary-text); text-align:center;">단계</h2>
+            <h2 id="step-title" style="font-size: 0.8rem; color: var(--secondary-text); text-align:center; text-transform: uppercase; letter-spacing: 1px;">단계</h2>
             <div id="meditation-content" class="current-step-text"></div>
             <div>
                 <label>지금 이 순간의 통찰</label>
-                <textarea id="insight" style="min-height: 80px;" placeholder="느낌을 기록하세요..." oninput="saveInsight()"></textarea>
+                <textarea id="insight" style="min-height: 80px;" placeholder="떠오르는 통찰을 기록하세요..."></textarea>
             </div>
             <div class="button-group" id="nav-group">
                 <button id="prev-btn" class="nav-button" onclick="goToPrevStep()">이전</button>
@@ -103,43 +138,48 @@
         const audioToggleBtn = document.getElementById('audio-toggle');
         const audioIcon = document.getElementById('audio-icon');
 
-        // 페이지 로드 시 데이터 복구
-        window.onload = () => {
-            document.getElementById('event').value = localStorage.getItem('acim_event') || "";
-            document.getElementById('judgment').value = localStorage.getItem('acim_judgment') || "";
+        // 저장 기능: 사용자명+사건명을 키로 사용하여 객체 저장
+        function saveToCloud() {
+            const user = document.getElementById('user-name').value.trim();
+            const title = document.getElementById('event-title').value.trim();
             
-            const savedStep = localStorage.getItem('acim_current_step');
-            if (savedStep !== null) {
-                currentStepIndex = parseInt(savedStep);
-                if (localStorage.getItem('acim_is_meditating') === 'true') {
-                    showMeditationSection();
-                }
+            if(!user || !title) return alert("사용자 이름과 사건명을 입력해야 저장할 수 있습니다.");
+
+            const data = {
+                event: document.getElementById('event').value,
+                judgment: document.getElementById('judgment').value,
+                insight: document.getElementById('insight').value,
+                timestamp: new Date().toLocaleString()
+            };
+
+            const key = `ACIM_${user}_${title}`;
+            localStorage.setItem(key, JSON.stringify(data));
+            alert(`[${title}] 저장되었습니다.`);
+        }
+
+        // 불러오기 기능
+        function loadFromCloud() {
+            const user = document.getElementById('user-name').value.trim();
+            const title = document.getElementById('event-title').value.trim();
+            
+            if(!user || !title) return alert("불러올 사용자 이름과 사건명을 입력하세요.");
+
+            const key = `ACIM_${user}_${title}`;
+            const savedData = localStorage.getItem(key);
+
+            if(savedData) {
+                const data = JSON.parse(savedData);
+                document.getElementById('event').value = data.event || "";
+                document.getElementById('judgment').value = data.judgment || "";
+                document.getElementById('insight').value = data.insight || "";
+                alert("성공적으로 불러왔습니다.");
+            } else {
+                alert("해당 정보로 저장된 데이터가 없습니다.");
             }
-        };
-
-        function saveData() {
-            localStorage.setItem('acim_event', document.getElementById('event').value);
-            localStorage.setItem('acim_judgment', document.getElementById('judgment').value);
-        }
-
-        function saveInsight() {
-            const insights = JSON.parse(localStorage.getItem('acim_insights') || "{}");
-            insights[currentStepIndex] = document.getElementById('insight').value;
-            localStorage.setItem('acim_insights', JSON.stringify(insights));
-        }
-
-        function loadInsight() {
-            const insights = JSON.parse(localStorage.getItem('acim_insights') || "{}");
-            document.getElementById('insight').value = insights[currentStepIndex] || "";
         }
 
         function startMeditation() {
-            if (!document.getElementById('event').value || !document.getElementById('judgment').value) return alert("내용을 입력해주세요.");
-            localStorage.setItem('acim_is_meditating', 'true');
-            showMeditationSection();
-        }
-
-        function showMeditationSection() {
+            if (!document.getElementById('event').value) return alert("정화할 내용을 입력해주세요.");
             document.getElementById('input-section').style.display = 'none';
             document.getElementById('meditation-section').style.display = 'flex';
             audioToggleBtn.style.display = 'flex'; 
@@ -151,39 +191,41 @@
             document.getElementById('meditation-content').innerText = scripts[currentStepIndex].text;
             document.getElementById('prev-btn').disabled = (currentStepIndex === 0);
             document.getElementById('next-btn').innerText = (currentStepIndex === scripts.length - 1) ? "완료" : "다음";
-            
-            loadInsight(); // 해당 단계의 저장된 통찰 불러오기
-            localStorage.setItem('acim_current_step', currentStepIndex);
             playStepAudio(scripts[currentStepIndex].audio);
         }
 
         function goToNextStep() {
-            if (currentStepIndex < scripts.length - 1) { currentStepIndex++; updateUI(); }
-            else { finishMeditation(); }
+            if (currentStepIndex < scripts.length - 1) { 
+                currentStepIndex++; 
+                updateUI(); 
+            } else { 
+                finishMeditation(); 
+            }
         }
 
         function goToPrevStep() {
-            if (currentStepIndex > 0) { currentStepIndex--; updateUI(); }
+            if (currentStepIndex > 0) { 
+                currentStepIndex--; 
+                updateUI(); 
+            }
         }
 
         function finishMeditation() {
             audioPlayer.pause();
             document.getElementById('step-title').innerText = "평온";
-            document.getElementById('meditation-content').innerText = "정화가 완료되었습니다.";
+            document.getElementById('meditation-content').innerText = "정화가 완료되었습니다.\n하나님의 평화가 함께합니다.";
             document.getElementById('nav-group').style.display = 'none';
             document.getElementById('reset-btn').style.display = 'block';
         }
 
         function goHome() {
-            localStorage.setItem('acim_is_meditating', 'false');
-            location.reload();
+            if(confirm("입력 중인 내용이 사라질 수 있습니다. 처음으로 돌아갈까요?")) {
+                location.reload();
+            }
         }
 
         function resetAll() {
-            if(confirm("모든 데이터를 삭제하고 새로 시작하시겠습니까?")) {
-                localStorage.clear();
-                location.reload();
-            }
+            location.reload();
         }
 
         function playStepAudio(src) {
